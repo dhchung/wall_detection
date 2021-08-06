@@ -127,6 +127,7 @@ void ProcessPoints(double time){
     }
     
     pub_lines.publish(wall_line_msg);
+    ROS_INFO("Published Wall No.: %d", int(Lines.size()));
 
 }
 
