@@ -107,7 +107,7 @@ std::vector<std::pair<std::pair<float, float>, std::pair<float, float>>>
         for(int i = 0; i < pt_wall.cols(); ++i) {
             float pt_x = -pt_wall(0,i);
             float pt_y = -pt_wall(1,i);
-            if(abs(pt_x) > max_length || abs(pt_y) > max_length) {
+            if(abs(pt_x) >= max_length || abs(pt_y) >= max_length) {
                 continue;
             }
             int bin_x;

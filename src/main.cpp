@@ -167,9 +167,13 @@ int main(int argc, char** argv) {
         ros::Time time;
         time.fromSec(rosbag_time);
 
-        tf_br.sendTransform(tf::StampedTransform(t_front, ros::Time::now(), "map", "/lidar_front/os_sensor"));
-        tf_br.sendTransform(tf::StampedTransform(t_port2front, ros::Time::now(), "/lidar_front/os_sensor", "/lidar_port/os_sensor"));
-        tf_br.sendTransform(tf::StampedTransform(t_starboard2front, ros::Time::now(), "/lidar_front/os_sensor", "/lidar_starboard/os_sensor"));
+        // tf_br.sendTransform(tf::StampedTransform(t_front, ros::Time::now(), "map", "/lidar_front/os_sensor"));
+        // tf_br.sendTransform(tf::StampedTransform(t_port2front, ros::Time::now(), "/lidar_front/os_sensor", "/lidar_port/os_sensor"));
+        // tf_br.sendTransform(tf::StampedTransform(t_starboard2front, ros::Time::now(), "/lidar_front/os_sensor", "/lidar_starboard/os_sensor"));
+
+        tf_br.sendTransform(tf::StampedTransform(t_front, time, "map", "/lidar_front/os_sensor"));
+        tf_br.sendTransform(tf::StampedTransform(t_port2front, time, "/lidar_front/os_sensor", "/lidar_port/os_sensor"));
+        tf_br.sendTransform(tf::StampedTransform(t_starboard2front, time, "/lidar_front/os_sensor", "/lidar_starboard/os_sensor"));
 
         ros::spinOnce();
     }
