@@ -37,6 +37,7 @@ tf::Quaternion q_front;
 tf::Quaternion q_port2front;
 tf::Quaternion q_starboard2front;
 ros::Publisher pub_pc_whole;
+// ros::Publisher pub_pc_filtered;
 ros::Publisher pub_lines;
 
 void LidarFrontHandle(const sensor_msgs::PointCloud2::ConstPtr & pc2_msg) {
@@ -89,28 +90,37 @@ void ProcessPoints(double time){
     pcl_pc_whole_pc += pcl_pc_lidar_port;
     pcl_pc_whole_pc += pcl_pc_lidar_starboard;
 
+
+
+
+    pcl::PointCloud<pcl::PointXYZI> pcl_pc_filtered_pc = pcl_pc_whole_pc;
     pcl::PassThrough<pcl::PointXYZI> pass;
-    pass.setInputCloud(pcl_pc_whole_pc.makeShared());
+    pass.setInputCloud(pcl_pc_filtered_pc.makeShared());
     pass.setFilterFieldName("z");
     pass.setFilterLimits(0.0f, 1.0f);
-    pass.filter(pcl_pc_whole_pc);
+    pass.filter(pcl_pc_filtered_pc);
 
     Eigen::Matrix3Xf e_whole_pc;
-    e_whole_pc.resize(3, pcl_pc_whole_pc.points.size());
-    for(size_t i = 0; i< pcl_pc_whole_pc.points.size(); ++i) {
-        e_whole_pc(0,i) = pcl_pc_whole_pc.points[i].x;
-        e_whole_pc(1,i) = pcl_pc_whole_pc.points[i].y;
-        e_whole_pc(2,i) = pcl_pc_whole_pc.points[i].z;
+    e_whole_pc.resize(3, pcl_pc_filtered_pc.points.size());
+    for(size_t i = 0; i< pcl_pc_filtered_pc.points.size(); ++i) {
+        e_whole_pc(0,i) = pcl_pc_filtered_pc.points[i].x;
+        e_whole_pc(1,i) = pcl_pc_filtered_pc.points[i].y;
+        e_whole_pc(2,i) = pcl_pc_filtered_pc.points[i].z;
     }
 
     std::vector<std::pair<std::pair<float, float>, std::pair<float, float>>> Lines =
         d_wall.GetOccupancyMap(e_whole_pc);
 
-
     sensor_msgs::PointCloud2 whole_cloud_msg;
     pcl::toROSMsg(pcl_pc_whole_pc, whole_cloud_msg);
-    whole_cloud_msg.header.frame_id = "map";
+    whole_cloud_msg.header.frame_id = "base_link";
+    whole_cloud_msg.header.stamp = ros::Time::now();
     pub_pc_whole.publish(whole_cloud_msg);
+
+    // sensor_msgs::PointCloud2 filtered_cloud_msg;
+    // pcl::toROSMsg(pcl_pc_filtered_pc, filtered_cloud_msg);
+    // `.header.frame_id = "base_link";
+    // pub_pc_filtered.publish(filtered_cloud_msg);
 
     core_msgs::wall_msg wall_line_msg;
     wall_line_msg.num = Lines.size();
@@ -157,7 +167,8 @@ int main(int argc, char** argv) {
     t_starboard2front.setRotation(q_starboard2front);
 
 
-    pub_pc_whole = nh.advertise<sensor_msgs::PointCloud2>("whole_cloud", 1000);
+    // pub_pc_filtered = nh.advertise<sensor_msgs::PointCloud2>("filtered_cloud", 1000);
+    pub_pc_whole = nh.advertise<sensor_msgs::PointCloud2>("whole_cloud",1000);
     pub_lines = nh.advertise<core_msgs::wall_msg>("wall_lines", 1000);
 
     rosbag_time = 0.0f;
