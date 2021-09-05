@@ -37,7 +37,7 @@ tf::Quaternion q_front;
 tf::Quaternion q_port2front;
 tf::Quaternion q_starboard2front;
 ros::Publisher pub_pc_whole;
-// ros::Publisher pub_pc_filtered;
+ros::Publisher pub_pc_filtered;
 ros::Publisher pub_lines;
 
 void LidarFrontHandle(const sensor_msgs::PointCloud2::ConstPtr & pc2_msg) {
@@ -117,10 +117,11 @@ void ProcessPoints(double time){
     whole_cloud_msg.header.stamp = ros::Time::now();
     pub_pc_whole.publish(whole_cloud_msg);
 
-    // sensor_msgs::PointCloud2 filtered_cloud_msg;
-    // pcl::toROSMsg(pcl_pc_filtered_pc, filtered_cloud_msg);
-    // `.header.frame_id = "base_link";
-    // pub_pc_filtered.publish(filtered_cloud_msg);
+    sensor_msgs::PointCloud2 filtered_cloud_msg;
+    pcl::toROSMsg(pcl_pc_filtered_pc, filtered_cloud_msg);
+    filtered_cloud_msg.header.frame_id = "base_link";
+    filtered_cloud_msg.header.stamp = ros::Time::now();
+    pub_pc_filtered.publish(filtered_cloud_msg);
 
     core_msgs::wall_msg wall_line_msg;
     wall_line_msg.num = Lines.size();
@@ -167,7 +168,7 @@ int main(int argc, char** argv) {
     t_starboard2front.setRotation(q_starboard2front);
 
 
-    // pub_pc_filtered = nh.advertise<sensor_msgs::PointCloud2>("filtered_cloud", 1000);
+    pub_pc_filtered = nh.advertise<sensor_msgs::PointCloud2>("filtered_cloud", 1000);
     pub_pc_whole = nh.advertise<sensor_msgs::PointCloud2>("whole_cloud",1000);
     pub_lines = nh.advertise<core_msgs::wall_msg>("wall_lines", 1000);
 
